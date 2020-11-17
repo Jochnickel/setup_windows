@@ -12,7 +12,7 @@ If ($isoDriveLetter -eq ""){echo couldnt mount image; exit}
 If ($isoDriveLetter -eq $null){echo couldnt mount image; exit}
 
 #copy to stick
-Start-Job -ScriptBlock {robocopy $isoDriveLetter':\' $thumbDrive /S /XF install.esd}
+Start-Job -ScriptBlock {robocopy $args} -ArgumentList $isoDriveLetter':\', $thumbDrive, /S,  /XF, install.esd
 
 Get-Job
 #  move to temp dir
