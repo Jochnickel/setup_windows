@@ -1,36 +1,54 @@
 #needs admin rights
 
 $isoFile = $args[0]
+$thumbDrive = $args[1]
+
 
 #  mount iso
 $isoDriveLetter = (Mount-DiskImage $isoFile -PassThru | Get-Volume).DriveLetter
 
 #TODO check letter automtaically
+If ($isoDriveLetter -eq ""){echo couldnt mount image; exit}
+If ($isoDriveLetter -eq $null){echo couldnt mount image; exit}
 
+#copy to stick
+Start-Job -ScriptBlock {robocopy $isoDriveLetter':\' $thumbDrive /S /XF install.esd}
+
+Get-Job
 #  move to temp dir
 New-TemporaryFile | %{ rm $_ ; mkdir $_ ; cd $_}
 
-#TODO unpack wim
+Get-Job
+# unpack wim
 mkdir wim
-dism /export-image /SourceImageFile:$isoDriveLetter":\sources\install.esd" /DestinationImageFile:.\wim\install.wim
+Dism.exe /Export-Image /SourceImageFile:$isoDriveLetter":\sources\install.esd" /SourceName:"Windows 10 Pro" /DestinationImageFile:.\wim\install.wim /Compress:Max /CheckIntegrity
 
+Get-Job
 #TODO mount image
 mkdir offline
-Mount-WindowsImage -ImagePath .\wim\install.wim -Path .\offline # -Index 2 
+Mount-WindowsImage -ImagePath .\wim\install.wim -Path .\offline 
 
+Get-Job
 #TODO export drivers
 mkdir drivers
 Export-WindowsDriver -Online -Destination .\drivers
 
+Get-Job
 #TODO add drivers to image
 Add-WindowsDriver -Path .\offline -Driver .\drivers -Recurse
 
+Get-Job
 # remove YourPhone app
 Remove-AppxProvisionedPackage -PackageName Microsoft.YourPhone -Path .\offline
+Enable-WindowsOptionalFeature -Path .\offline -FeatureName "NetFx3" -All
 
+Get-Job
 # set product key
 $productKey = (Get-WmiObject -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey
 Set-WindowsProductKey -Path .\offline -ProductKey $productKey
 
+Get-Job
 #pack
-Dismount-WindowsImage -Path "c:\offline" -Save
+Dismount-WindowsImage -Path .\offline -Save
+
+
