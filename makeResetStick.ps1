@@ -3,6 +3,7 @@
 $isoFile = $args[0]
 $thumbDrive = $args[1]
 
+$version = "Windows 10 Pro"
 
 #  mount iso
 $isoDriveLetter = (Mount-DiskImage $isoFile -PassThru | Get-Volume).DriveLetter
@@ -21,12 +22,12 @@ New-TemporaryFile | %{ rm $_ ; mkdir $_ ; cd $_}
 Get-Job
 # unpack wim
 mkdir wim
-Dism.exe /Export-Image /SourceImageFile:$isoDriveLetter":\sources\install.esd" /SourceName:"Windows 10 Pro" /DestinationImageFile:.\wim\install.wim /Compress:Max /CheckIntegrity
+Dism.exe /Export-Image /SourceImageFile:$isoDriveLetter":\sources\install.esd" /SourceName:$version /DestinationImageFile:.\wim\install.wim /Compress:Max /CheckIntegrity
 
 Get-Job
 #TODO mount image
 mkdir offline
-Mount-WindowsImage -ImagePath .\wim\install.wim -Path .\offline 
+Mount-WindowsImage -Path .\offline\ -ImagePath .\wim\install.wim -Name $version
 
 Get-Job
 #TODO export drivers
