@@ -70,3 +70,8 @@ $jobUnMountImage = Start-Job -ScriptBlock {
   Dismount-WindowsImage -Path .\offline -Save
   copy .\wim\install.wim $args[2]
 } -ArgumentList $jobCustomizeMount, $jobAddDrivers, $thumbDrive'sources\install.wim'
+
+echo waiting for tasks to finish
+$jobUnMountImage | Wait-Job
+echo done
+pause
