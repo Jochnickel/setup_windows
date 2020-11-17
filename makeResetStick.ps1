@@ -64,12 +64,9 @@ $jobCustomizeMount = Start-Job -ScriptBlock {
 } -ArgumentList $jobMountImage
 
 
-$jobMountImage = Start-Job -ScriptBlock {
+$jobUnMountImage = Start-Job -ScriptBlock {
   $args[0] | Wait-Job
+  $args[1] | Wait-Job
   Dismount-WindowsImage -Path .\offline -Save
-} -ArgumentList $jobCustomizeMount
-
-Get-Job
-#pack
-
-
+  copy .\wim\install.wim $args[2]
+} -ArgumentList $jobCustomizeMount, $jobAddDrivers, $thumbDrive'sources\install.wim'
