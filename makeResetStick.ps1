@@ -1,3 +1,34 @@
+$isoFile = "D:\Downloads\Windows.iso"
+$thumbDriveLetter = "E"
+
+echo formatting drive $thumbDriveLetter ...
+Format-Volume -DriveLetter $thumbDriveLetter -FileSystem FAT32 -NewFileSystemLabel "Windows10"
+
+echo Mounting iso ...
+$isoDriveLetter = (Mount-DiskImage $isoFile -PassThru | Get-Volume).DriveLetter
+
+echo Copying Windows Key ...
+$wkey=(Get-WmiObject -query 'select * from SoftwareLicensingService').OA3xOriginalProductKey
+echo [PID] > $thumbDriveLetter':\sources\PID.txt'
+echo Value=$wkey >> $thumbDriveLetter':\sources\PID.txt'
+echo [EditionID] Education [Channel] Retail > $thumbDriveLetter':\sources\EI.cfg'
+mkdir $thumbDriveLetter':\drivers'
+
+echo Copying Drivers ...
+Export-WindowsDriver -Online -Destination $thumbDriveLetter':\drivers'
+
+echo Copying ISO ...
+robocopy $isoDriveLetter':\' $thumbDriveLetter':\' /S
+
+echo done
+pause
+
+
+
+
+
+##old
+
 # #needs admin rights
 # #error "The file install.wim is too big for the stick
 
